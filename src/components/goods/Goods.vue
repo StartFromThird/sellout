@@ -1,9 +1,11 @@
 <template>
   <div class="goods">
     <!-- 左侧分类导航 -->
-    <div class="menu-wrapper">
+    <div class="menu-wrapper" ref="menuWrapper">
       <ul>
-        <li class="menu-item" v-for="(item) in goods" :key="item.name">
+        <li class="menu-item" v-for="(item, index) in goods" :key="item.name" :ref="index"
+        :class="{'current': menuIndex===index}"
+        @click="selectMenu(item.name, index, $event)">
           <span class="text border-1px">
             <span v-if="item.type>0" class="icon" :class="classMap[item.type]"></span>
             {{item.name}}
@@ -12,9 +14,9 @@
       </ul>
     </div>
     <!-- 右侧商品信息 -->
-    <div class="foods-wrapper">
+    <div class="foods-wrapper" ref="foodsWrapper">
       <ul>
-        <li class="food-list" v-for="(item) in goods" :key="item.name">
+        <li class="food-list" v-for="(item) in goods" :key="item.name" :ref="item.name">
           <p class="title">{{item.name}}</p>
           <ul>
             <li class="food-item border-1px" v-for="i in item.foods"  :key="i.name">
@@ -56,7 +58,12 @@ export default {
   },
   data () {
     return {
-      goods: []
+      goods: [],
+      listHeight: [],
+      // 右侧Y滑动距离
+      scrollY: 0,
+      len: 0,
+      menuIndex: 0
     }
   },
   methods: {
@@ -71,19 +78,85 @@ export default {
       if (res.errno === ERR_OK && res.data) {
         const data = res.data
         this.goods = data
-        console.log(this.goods)
+        this.len = this.goods.length
+        // console.log(this.goods)
+        // $nextTick() 为正确计算高度
+        this.$nextTick(() => {
+          this._initScroll()
+          this._calculateHeight()
+        })
       }
     },
     // 初始化better-scroll
     _initScroll () {
-      this.meunScroll = new BScroll()
+      this.meunScroll = new BScroll(this.$refs.menuWrapper, {
+        click: true,
+        tap: true
+      })
+      this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {
+        probeType: 3,
+        click: true,
+        tap: true
+      })
+      // 获取foodsScroll的Y轴位移
+      this.foodsScroll.on('scroll', (pos) => {
+        this.scrollY = Math.abs(Math.round(pos.y))
+        this.menuIndex = this.currentIndex
+      })
+    },
+    // 获取右侧每个分类对应的clientHeight数组
+    _calculateHeight () {
+      let height = 0
+      let len = this.len
+      let foodList = []
+      for (let i = 0; i < len; i++) {
+        let name = this.goods[i].name
+        foodList[i] = this.$refs[name][0]
+        height = height + foodList[i].clientHeight
+        this.listHeight.push(height)
+      }
+      this.listHeight.unshift(0)
+      // console.log('list', foodList, this.listHeight)
+    },
+    // 点击左侧菜单，右侧跳到对应位置
+    selectMenu (name, index, event) {
+      // 清除自带click事件
+      if (!event._constructed) {
+        return
+      }
+      let ele = this.$refs[name][0]
+      this.menuIndex = index
+      this.foodsScroll.scrollToElement(ele)
+      // this.foodsScroll.scrollToElement(ele, 300)
     }
-
+  },
+  computed: {
+    currentIndex () {
+      let len = this.len
+      for (let i = 0; i < len; i++) {
+        let height1 = this.listHeight[i]
+        let height2 = this.listHeight[i + 1]
+        if (!height2 || ((this.scrollY >= height1) && (this.scrollY < height2))) {
+          // console.log("Y", this.scrollY, height1, height2, i)
+          return i
+        }
+      }
+      return 0
+    }
   },
   created () {
     this.getInfo()
     // support部分左侧小图标对应的class
     this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee']
+  },
+  mounted () {
+    // 滚动
+    // let menuWrapper = document.querySelector('.menu-wrapper')
+    // // let menuWrapper = this.$refs.menuWrapper
+    // this.meunScroll = new BScroll(menuWrapper, {
+    //   click: true,
+    //   tap: true
+    // })
   }
 }
 </script>
@@ -108,6 +181,14 @@ export default {
       width 3.5rem /* 56/16 */
       padding 0 .75rem /* 12/16 */
       line-height 14px
+      &.current
+        position relative
+        z-index 10
+        margin-top -1px
+        background #fcc
+        font-weight 700
+        .text
+          border-none()
       .icon
         display inline-block
         width 16px
