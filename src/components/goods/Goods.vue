@@ -34,23 +34,34 @@
                   <span class="now">￥{{i.price}}</span>
                   <span class="old" v-if="i.oldPrice">￥{{i.oldPrice}}</span>
                 </div>
+                <!-- 商品加减组件 -->
+                <div class="cartcontrol-wrapper">
+                  <cart-control :food="i"></cart-control>
+                </div>
               </div>
             </li>
           </ul>
         </li>
       </ul>
     </div>
+    <!-- 购物车 -->
+    <shopcart :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice"></shopcart>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
 import BScroll from 'better-scroll'
+import Shopcart from '../shopcart/Shopcart'
+import CartControl from '../cartcontrol/CartControl'
 // 接口数据返回正确
 const ERR_OK = 0
 export default {
   name: 'Goods',
-  components: {},
+  components: {
+    Shopcart,
+    CartControl
+  },
   props: {
     seller: {
       type: Object
@@ -271,5 +282,8 @@ export default {
             text-decoration line-through
             font-size 10px
             color rgb(147, 153, 159)
-
+        .cartcontrol-wrapper
+          position absolute
+          right 0
+          bottom 12px
 </style>
