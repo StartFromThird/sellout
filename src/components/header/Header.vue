@@ -78,7 +78,7 @@
 </template>
 <script type="text/ecmascript-6">
 import Star from '../star/showStar'
-import FadeAnimation from '../fade/FadeAnimation'
+import FadeAnimation from '../animate/FadeAnimation'
 export default {
   name: 'Header',
   components: {
