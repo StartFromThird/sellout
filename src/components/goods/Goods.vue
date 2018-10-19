@@ -45,7 +45,8 @@
       </ul>
     </div>
     <!-- 购物车 -->
-    <shopcart :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice"></shopcart>
+    <shopcart :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice"
+              :selectFoods="selectFoods"></shopcart>
   </div>
 </template>
 
@@ -153,6 +154,19 @@ export default {
         }
       }
       return 0
+    },
+    // 遍历所有商品的food.count
+    selectFoods () {
+      let foods = []
+      this.goods.forEach((good) => {
+        good.foods.forEach((food) => {
+          if (food.count) {
+            foods.push(food)
+          }
+        })
+      })
+      // console.log(foods)
+      return foods
     }
   },
   created () {
