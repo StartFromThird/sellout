@@ -36,7 +36,7 @@
                 </div>
                 <!-- 商品加减组件 -->
                 <div class="cartcontrol-wrapper">
-                  <cart-control :food="i"></cart-control>
+                  <cart-control :food="i" @addFood="_drop"></cart-control>
                 </div>
               </div>
             </li>
@@ -46,7 +46,8 @@
     </div>
     <!-- 购物车 -->
     <shopcart :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice"
-              :selectFoods="selectFoods"></shopcart>
+              :selectFoods="selectFoods"
+              ref="shopcart"></shopcart>
   </div>
 </template>
 
@@ -140,6 +141,12 @@ export default {
       this.menuIndex = index
       this.foodsScroll.scrollToElement(ele)
       // this.foodsScroll.scrollToElement(ele, 300)
+    },
+    _drop (target) {
+      // 调用子组件drop方法 异步执行
+      this.$nextTick(() => {
+        this.$refs.shopcart.drop(target)
+      })
     }
   },
   computed: {

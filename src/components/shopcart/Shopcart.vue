@@ -14,6 +14,15 @@
       <div class="content-right" :class="payClass">
         <div class="pay">{{payDesc}}</div>
       </div>
+      <!-- 小球掉落动画 -->
+      <div class="ball-container">
+        <div class="ball"
+              v-for="(ball, index) in balls" :key="index"
+              v-show="ball.show"
+              transition="drop">
+          <div class="inner"></div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -34,8 +43,8 @@ export default {
       default () {
         return [
           {
-            price: 10,
-            count: 1
+            price: 0,
+            count: 0
           }
         ]
       }
@@ -43,7 +52,21 @@ export default {
   },
   data () {
     return {
-
+      // 小球当前状态
+      balls: [
+        {
+          show: false
+        }, {
+          show: false
+        }, {
+          show: false
+        }, {
+          show: false
+        }, {
+          show: false
+        }
+      ],
+      dropBalls: []
     }
   },
   computed: {
@@ -63,7 +86,7 @@ export default {
     },
     payDesc () {
       if (this.totalPrice === 0) {
-        return `￥${minPrice}起送`
+        return `￥${this.minPrice}起送`
       } else if (this.totalPrice > 0 && this.totalPrice < this.minPrice) {
         let extra = this.minPrice - this.totalPrice
         return `还差￥${extra}起送`
@@ -76,6 +99,20 @@ export default {
         return 'enough'
       } else {
         return 'not-enough'
+      }
+    }
+  },
+  methods: {
+    drop (el) {
+      // console.log(el)
+      for (let i = 0; i < this.balls.length; i++) {
+        let ball = this.balls[i]
+        if (!ball.show) {
+          ball.show = true
+          ball.el = el
+          this.dropBalls.push(ball)
+          return
+        }
       }
     }
   }
@@ -177,4 +214,18 @@ export default {
         &.enough
           background #00b43c
           color #fff
+    .ball-container
+      .ball
+        position fixed
+        left 2rem /* 32/16 */
+        bottom 2rem /* 32/16 */
+        z-index 200
+        &.drop-transition
+          transition all .4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+          .inner
+            width 16px
+            height 16px
+            border-radius 50%
+            background rgb(0, 160, 220)
+            transition all .4s linear
 </style>

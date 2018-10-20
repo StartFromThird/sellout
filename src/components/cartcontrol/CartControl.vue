@@ -31,7 +31,7 @@ export default {
     // 这里直接改了父元素的food对象
     decreaseCart (event) {
       if (!event._constructed) {
-        return ;
+        return
       }
       if (this.food.count <= 1) {
         this.food.count = 0
@@ -49,7 +49,8 @@ export default {
       } else {
         this.food.count++
       }
-      this.$dispatch('cart.add', event.target)
+      // 对应target传给父组件Goods
+      this.$emit('addFood', event.target)
     }
   }
 }
