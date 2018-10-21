@@ -1,5 +1,5 @@
 <template>
-  <div class="Shopcart">
+  <div class="Shopcart" @click="toggleList">
     <div class="content">
       <div class="content-left">
         <div class="logo-wrapper">
@@ -23,14 +23,42 @@
           <div class="inner"></div>
         </div>
       </div>
+      <!-- 底部弹出已选商品列表 -->
+      <slide-up-animation>
+      <div class="shopcart-list" v-show="listShow">
+        <div class="list-header">
+          <h1 class="title">购物车</h1>
+          <span class="empty" @click="emptyList">清空</span>
+        </div>
+        <div class="list-content" ref="listContent">
+          <ul>
+            <li class="food" v-for="(food, index) in selectFoods" :key=index>
+              <span class="name">{{food.name}}</span>
+              <div class="price">
+                <span>￥{{food.price*food.count}}</span>
+              </div>
+              <div class="cartcontrol-wrapper">
+                <cart-control :food="food"></cart-control>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      </slide-up-animation>
     </div>
   </div>
 </template>
 
 <script>
+import CartControl from '../cartcontrol/CartControl'
+import SlideUpAnimation from '../animate/SlideUpAnimation'
+import BScroll from 'better-scroll'
 export default {
   name: 'Shopcart',
-  components: {},
+  components: {
+    CartControl,
+    SlideUpAnimation
+  },
   props: {
     deliveryPrice: {
       type: Number
@@ -52,6 +80,9 @@ export default {
   },
   data () {
     return {
+
+      isListShow: false,
+      fold: true,
       // 小球当前状态
       balls: [
         {
@@ -100,9 +131,51 @@ export default {
       } else {
         return 'not-enough'
       }
+    },
+
+    listShow () {
+      if (!this.totalCount) {
+        this.fold = true
+        return false
+      }
+      let show = !this.fold
+      if (show) {
+        this.$nextTick(() => {
+          if (!this.scroll) {
+            this._initScroll()
+          } else {
+            // list更新后BScroll更新
+            this.scroll.refresh()
+          }
+        })
+      }
+      return show
     }
   },
   methods: {
+    toggleList () {
+      if (!this.totalCount) {
+        return
+      }
+      this.fold = !this.fold
+      // if (this.totalCount === 0) {
+      //   this.isListShow = false
+      // } else {
+      //   this.isListShow = !this.isListShow
+      // }
+    },
+    _initScroll () {
+      this.listContent = new BScroll(this.$refs.listContent, {
+        click: true,
+        tap: true
+      })
+    },
+    // 清空购物车已选列表
+    emptyList () {
+      this.selectFoods.forEach((food) => {
+        food.count = 0
+      })
+    },
     drop (el) {
       // console.log(el)
       for (let i = 0; i < this.balls.length; i++) {
@@ -120,6 +193,7 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+@import "../../common/stylus/mixin.styl"
   .Shopcart
     position fixed
     bottom 0
@@ -228,4 +302,49 @@ export default {
             border-radius 50%
             background rgb(0, 160, 220)
             transition all .4s linear
+    .shopcart-list
+      position absolute
+      bottom 3rem
+      width 100%
+      z-index -1
+      .list-header
+        height 40px
+        line-height 40px
+        padding 0 18px
+        background #f3f5f7
+        border-bottom 1px solid rgba(7, 17, 27, 0.1)
+        .title
+          float left
+          font-size 14px
+          color rgb(7, 17, 27)
+        .empty
+          float right
+          font-size 12px
+          color rgb(0, 160, 220)
+      .list-content
+        padding 0 18px
+        max-height 217px
+        overflow hidden
+        background #fff
+        .food
+          position relative
+          box-sizing border-box
+          padding 12px 0
+          border-1px(rgba(7, 17, 27, 0.1))
+          .name
+            line-height 24px
+            font-size 14px
+            color rgb(7, 17, 27)
+          .price
+            position absolute
+            right 90px
+            bottom 12px
+            line-height 24px
+            font-size 14px
+            font-weight 700
+            color rgb(240, 20, 20)
+          .cartcontrol-wrapper
+            position absolute
+            right 0
+            bottom 6px
 </style>
