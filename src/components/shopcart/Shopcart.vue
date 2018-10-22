@@ -1,63 +1,70 @@
 <template>
-  <div class="Shopcart" @click="toggleList">
-    <div class="content">
-      <div class="content-left">
-        <div class="logo-wrapper">
-          <div class="logo" :class="{'highlight':totalCount>0}">
-            <span class="icon-shopping_cart" :class="{'highlight':totalCount>0}"></span>
+  <div class="onediv">
+    <div class="shopcart" @click="toggleList">
+      <div class="content">
+        <div class="content-left">
+          <div class="logo-wrapper">
+            <div class="logo" :class="{'highlight':totalCount>0}">
+              <span class="icon-shopping_cart" :class="{'highlight':totalCount>0}"></span>
+            </div>
+            <div class="num" v-if="totalCount>0">{{totalCount}}</div>
           </div>
-          <div class="num" v-if="totalCount>0">{{totalCount}}</div>
+          <div class="price border-1px-x" :class="{'highlight':totalCount>0}">￥{{totalPrice}}</div>
+          <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
         </div>
-        <div class="price border-1px-x" :class="{'highlight':totalCount>0}">￥{{totalPrice}}</div>
-        <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
-      </div>
-      <div class="content-right" :class="payClass">
-        <div class="pay">{{payDesc}}</div>
-      </div>
-      <!-- 小球掉落动画 -->
-      <div class="ball-container">
-        <div class="ball"
-              v-for="(ball, index) in balls" :key="index"
-              v-show="ball.show"
-              transition="drop">
-          <div class="inner"></div>
+        <div class="content-right" :class="payClass" @click.stop.prevent="pay">
+          <div class="pay">{{payDesc}}</div>
         </div>
-      </div>
-      <!-- 底部弹出已选商品列表 -->
-      <slide-up-animation>
-      <div class="shopcart-list" v-show="listShow">
-        <div class="list-header">
-          <h1 class="title">购物车</h1>
-          <span class="empty" @click="emptyList">清空</span>
+        <!-- 小球掉落动画 -->
+        <div class="ball-container">
+          <div class="ball"
+                v-for="(ball, index) in balls" :key="index"
+                v-show="ball.show"
+                transition="drop">
+            <div class="inner"></div>
+          </div>
         </div>
-        <div class="list-content" ref="listContent">
-          <ul>
-            <li class="food" v-for="(food, index) in selectFoods" :key=index>
-              <span class="name">{{food.name}}</span>
-              <div class="price">
-                <span>￥{{food.price*food.count}}</span>
-              </div>
-              <div class="cartcontrol-wrapper">
-                <cart-control :food="food"></cart-control>
-              </div>
-            </li>
-          </ul>
+        <!-- 底部弹出已选商品列表 -->
+        <slide-up-animation>
+        <div class="shopcart-list" v-show="listShow">
+          <div class="list-header">
+            <h1 class="title">购物车</h1>
+            <span class="empty" @click="emptyList">清空</span>
+          </div>
+          <div class="list-content" ref="listContent">
+            <ul>
+              <li class="food" v-for="(food, index) in selectFoods" :key=index>
+                <span class="name">{{food.name}}</span>
+                <div class="price">
+                  <span>￥{{food.price}}</span>
+                </div>
+                <div class="cartcontrol-wrapper">
+                  <cart-control :food="food"></cart-control>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
+        </slide-up-animation>
       </div>
-      </slide-up-animation>
     </div>
+    <fade-animation>
+      <div class="list-mask" v-show="listShow" @click="hideList"></div>
+    </fade-animation>
   </div>
 </template>
 
 <script>
 import CartControl from '../cartcontrol/CartControl'
 import SlideUpAnimation from '../animate/SlideUpAnimation'
+import FadeAnimation from '../animate/FadeAnimation'
 import BScroll from 'better-scroll'
 export default {
   name: 'Shopcart',
   components: {
     CartControl,
-    SlideUpAnimation
+    SlideUpAnimation,
+    FadeAnimation
   },
   props: {
     deliveryPrice: {
@@ -80,8 +87,7 @@ export default {
   },
   data () {
     return {
-
-      isListShow: false,
+      // 购物车已选列表隐藏
       fold: true,
       // 小球当前状态
       balls: [
@@ -132,37 +138,32 @@ export default {
         return 'not-enough'
       }
     },
-
     listShow () {
-      if (!this.totalCount) {
-        this.fold = true
+      if (this.totalCount === 0) {
         return false
+      } else {
+        let show = !this.fold
+        if (show) {
+          this.$nextTick(() => {
+            if (!this.scroll) {
+              this._initScroll()
+            } else {
+              // list更新后BScroll更新
+              this.scroll.refresh()
+            }
+          })
+        }
+        return show       
       }
-      let show = !this.fold
-      if (show) {
-        this.$nextTick(() => {
-          if (!this.scroll) {
-            this._initScroll()
-          } else {
-            // list更新后BScroll更新
-            this.scroll.refresh()
-          }
-        })
-      }
-      return show
     }
   },
   methods: {
     toggleList () {
-      if (!this.totalCount) {
-        return
+      if (this.totalCount === 0) {
+        this.fold = true
+      } else {
+        this.fold = !this.fold
       }
-      this.fold = !this.fold
-      // if (this.totalCount === 0) {
-      //   this.isListShow = false
-      // } else {
-      //   this.isListShow = !this.isListShow
-      // }
     },
     _initScroll () {
       this.listContent = new BScroll(this.$refs.listContent, {
@@ -175,6 +176,16 @@ export default {
       this.selectFoods.forEach((food) => {
         food.count = 0
       })
+    },
+    // 点击阴影，购物车已选列表隐藏
+    hideList () {
+      this.fold = true
+    },
+    pay () {
+      if (this.totalPrice < this.minPrice) {
+        return
+      }
+      window.alert(`支付￥${this.totalPrice}元`)
     },
     drop (el) {
       // console.log(el)
@@ -194,8 +205,15 @@ export default {
 
 <style lang="stylus" scoped>
 @import "../../common/stylus/mixin.styl"
-  .Shopcart
+.onediv
+  width 100%
+  position fixed
+  left 0
+  right 0
+  bottom 0
+  .shopcart
     position fixed
+    left 0
     bottom 0
     width 100%
     height 3rem /* 48/16 */
@@ -347,4 +365,12 @@ export default {
             position absolute
             right 0
             bottom 6px
+  .list-mask
+    position fixed
+    top 0
+    width 100%
+    height 100%
+    background rgba(7, 17, 27, 0.6)
+    z-index 40
+    -webkit-backdrop-filter blur(10px)
 </style>
