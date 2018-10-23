@@ -1,7 +1,7 @@
 <template>
   <div class="onediv">
-    <div class="shopcart" @click="toggleList">
-      <div class="content">
+    <div class="shopcart">
+      <div class="content" @click="toggleList">
         <div class="content-left">
           <div class="logo-wrapper">
             <div class="logo" :class="{'highlight':totalCount>0}">
@@ -15,38 +15,38 @@
         <div class="content-right" :class="payClass" @click.stop.prevent="pay">
           <div class="pay">{{payDesc}}</div>
         </div>
-        <!-- 小球掉落动画 -->
-        <div class="ball-container">
-          <div class="ball"
-                v-for="(ball, index) in balls" :key="index"
-                v-show="ball.show"
-                transition="drop">
-            <div class="inner"></div>
-          </div>
-        </div>
-        <!-- 底部弹出已选商品列表 -->
-        <slide-up-animation>
-        <div class="shopcart-list" v-show="listShow">
-          <div class="list-header">
-            <h1 class="title">购物车</h1>
-            <span class="empty" @click="emptyList">清空</span>
-          </div>
-          <div class="list-content" ref="listContent">
-            <ul>
-              <li class="food" v-for="(food, index) in selectFoods" :key=index>
-                <span class="name">{{food.name}}</span>
-                <div class="price">
-                  <span>￥{{food.price}}</span>
-                </div>
-                <div class="cartcontrol-wrapper">
-                  <cart-control :food="food"></cart-control>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-        </slide-up-animation>
       </div>
+      <!-- 小球掉落动画 -->
+      <div class="ball-container">
+        <div class="ball"
+              v-for="(ball, index) in balls" :key="index"
+              v-show="ball.show"
+              transition="drop">
+          <div class="inner"></div>
+        </div>
+      </div>
+      <!-- 底部弹出已选商品列表 -->
+      <slide-up-animation>
+      <div class="shopcart-list" v-show="listShow">
+        <div class="list-header">
+          <h1 class="title">购物车</h1>
+          <span class="empty" @click="emptyList">清空</span>
+        </div>
+        <div class="list-content" ref="listContent">
+          <ul>
+            <li class="food" v-for="(food, index) in selectFoods" :key=index>
+              <span class="name">{{food.name}}</span>
+              <div class="price">
+                <span>￥{{food.price}}</span>
+              </div>
+              <div class="cartcontrol-wrapper">
+                <cart-control :food="food"></cart-control>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      </slide-up-animation>
     </div>
     <fade-animation>
       <div class="list-mask" v-show="listShow" @click="hideList"></div>
@@ -139,9 +139,9 @@ export default {
       }
     },
     listShow () {
-      if (this.totalCount === 0) {
-        return false
-      } else {
+      // if (this.totalCount === 0) {
+      //   return false
+      // } else {
         let show = !this.fold
         if (show) {
           this.$nextTick(() => {
@@ -154,7 +154,7 @@ export default {
           })
         }
         return show       
-      }
+      // }
     }
   },
   methods: {
@@ -176,6 +176,7 @@ export default {
       this.selectFoods.forEach((food) => {
         food.count = 0
       })
+      this.fold = true
     },
     // 点击阴影，购物车已选列表隐藏
     hideList () {

@@ -217,7 +217,7 @@ export default {
         position relative
         z-index 10
         margin-top -1px
-        background #fcc
+        background #fff
         font-weight 700
         .text
           border-none()
@@ -249,7 +249,7 @@ export default {
         font-size 12px
   .foods-wrapper
     flex 1
-    background #fcf
+    // background #fcf
     .title
       padding-left 14px
       height 26px
@@ -264,7 +264,7 @@ export default {
       margin 18px
       padding-bottom 18px
       border-1px(rgba(7, 17, 27, 0.1))
-      border-1px(rgba(7, 17, 27, 1))
+      // border-1px(rgba(7, 17, 27, 1))
       &:last-child
         border-none()
         margin-bottom 0
