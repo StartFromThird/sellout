@@ -19,7 +19,7 @@
         <li class="food-list" v-for="(item) in goods" :key="item.name" :ref="item.name">
           <p class="title">{{item.name}}</p>
           <ul>
-            <li class="food-item border-1px" v-for="i in item.foods"  :key="i.name">
+            <li class="food-item border-1px" v-for="i in item.foods" :key="i.name" @click="showGoodsDetail(i, $event)">
               <div class="icon">
                 <img :src="i.icon" alt="">
               </div>
@@ -47,7 +47,10 @@
     <!-- 购物车 -->
     <shopcart :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice"
               :selectFoods="selectFoods"
-              ref="shopcart"></shopcart>
+              ref="shopcart">
+    </shopcart>
+    <!-- 商品详情页 -->
+    <goods-detail ref="goodsdetail" :selectedGood="selectedGoods"></goods-detail>
   </div>
 </template>
 
@@ -56,13 +59,15 @@ import axios from 'axios'
 import BScroll from 'better-scroll'
 import Shopcart from '../shopcart/Shopcart'
 import CartControl from '../cartcontrol/CartControl'
+import GoodsDetail from '../goodsdetail/GoodsDetail'
 // 接口数据返回正确
 const ERR_OK = 0
 export default {
   name: 'Goods',
   components: {
     Shopcart,
-    CartControl
+    CartControl,
+    GoodsDetail
   },
   props: {
     seller: {
@@ -76,7 +81,8 @@ export default {
       // 右侧Y滑动距离
       scrollY: 0,
       len: 0,
-      menuIndex: 0
+      menuIndex: 0,
+      selectedGoods: {}
     }
   },
   methods: {
@@ -141,6 +147,14 @@ export default {
       this.menuIndex = index
       this.foodsScroll.scrollToElement(ele)
       // this.foodsScroll.scrollToElement(ele, 300)
+    },
+    // 点击右侧菜单，显示对应商品详情
+    showGoodsDetail (goods, event) {
+      if (!event._constructed) {
+        return
+      }
+      this.selectedGoods = goods
+      this.$refs.goodsdetail.show()
     },
     _drop (target) {
       // 调用子组件drop方法 异步执行
