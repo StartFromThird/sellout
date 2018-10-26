@@ -142,18 +142,18 @@ export default {
       // if (this.totalCount === 0) {
       //   return false
       // } else {
-        let show = !this.fold
-        if (show) {
-          this.$nextTick(() => {
-            if (!this.scroll) {
-              this._initScroll()
-            } else {
-              // list更新后BScroll更新
-              this.scroll.refresh()
-            }
-          })
-        }
-        return show       
+      let show = !this.fold
+      if (show) {
+        this.$nextTick(() => {
+          if (!this.scroll) {
+            this._initScroll()
+          } else {
+            // list更新后BScroll更新
+            this.scroll.refresh()
+          }
+        })
+      }
+      return show
       // }
     }
   },
@@ -212,6 +212,7 @@ export default {
   left 0
   right 0
   bottom 0
+  z-index 50
   .shopcart
     position fixed
     left 0
